@@ -49,7 +49,7 @@ pipeline {
             $class: 'GitSCM', 
             branches: [[name: "*/main"]], 
             userRemoteConfigs: [[
-              url: 'https://github.com/lamelihuynh/devsec-test',
+              url: 'https://github.com/lamelihuynh/linh-test',
             ]]
           ])
           
