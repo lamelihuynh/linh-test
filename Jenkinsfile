@@ -96,7 +96,7 @@ pipeline {
                 chmod +x gitleaks
                 export PATH=$PATH:$(pwd)
               fi
-              ./gitleaks detect --source . --report-path ${SCAN_REPORT_DIR}/gitleaks-report.json --report-format json
+              ./gitleaks protect detect --source . --report-path ${SCAN_REPORT_DIR}/gitleaks-report.json --report-format json
 
             ''',
             returnStatus: true
