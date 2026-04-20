@@ -300,7 +300,7 @@ pipeline {
           git diff --cached --quiet && echo "No changes to commit" || 
           git commit -m "[skip ci] staging: bump image to ${env.IMAGE_TAG} [build #${env.BUILD_NUMBER}]"
 
-          export GIT_TERMINAL_PROMPT= 0 
+          export GIT_TERMINAL_PROMPT=0 
           git push origin main || echo "Nothing to push"
           echo "[OK] Staging kustomization updated - ArgoCD will sync automatically"
 
