@@ -277,9 +277,46 @@ pipeline {
           cd kubernetes/overlays/staging
           if command -v kustomize &> /dev/null; then 
             kustomize edit set image tetris-devsecops=${env.IMAGE_URI}
+            echo 
           else 
+            # Fallback : use if kustomize not installed
             sed -i "s|newTag:.*|newTag: ${env.IMAGE_TAG}|g" kustomization.yaml
           fi 
+
+          echo "Updated kustomization.yaml:"
+          cat kustomization.yaml 
+
+          cd ../../
+
+
+          # Commit and push -> ArgoCD detect change and syncs 
+          git config user.email "gianglinh271@gmail.com"
+          git config user.name "lamelihuynh"
+          git remote set-url origin https://\${GIT_TOKEN}@github.com/lamelihuynh/linh-test.git
+
+          git add kubernetes/overlays.staging/kustomization.yaml
+
+          git diff --cached --quiet && echo "No changes to commit" || \ 
+          git commit -m "[skip ci] staging: bump image to ${env.IMAGE_TAG} [build #${env.BUILD_NUMBER}]"
+
+          export GIT_TERMINAL_PROMPT= 0 
+          git push origin main || echo "Nothing to push"
+          echo "[OK] Staging kustomization updated - ArgoCD will sync automatically"
+
+          """
+
+          echo 'Waiting for staging to be healthy...'
+          sh """
+            for i in \$(seq 1 18); do 
+              HTTP=\$(curl -sf -o /dev/null -w "%{http_code}"  ${env.STAGING_URL}/health 2>/dev/null || echo 000 )
+              if ["\$HTTP" = "200"]; then 
+                echo   "[OK] Staging healthy after \${i} attemps"
+                exit 0
+              fi
+              echo "Attempt \${i}/18: HTTP \$HTTP - waiting 10s..."
+              sleep 10
+            done 
+            echo "[WARN] Staging healthy check timeout - DAST may run against partial deployment"
           """
         }
       }
