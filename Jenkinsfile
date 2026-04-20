@@ -323,6 +323,45 @@ pipeline {
       }
     }
   }
+
+
+
+
+  stage('12. DAST Scan'){
+      steps{
+        script{
+          echo '==== Running DAST scan ===='
+          sh '''
+
+          '''
+        }
+      }
+
+      post {
+        always{
+          archiveArtifacts artifacts: "${SCAN_REPORT_DIR}/trivy-report.json", allowEmptyArchive:true
+        }
+      }
+    }
+
+
+
+      stage('13. Upload finding'){
+      steps{
+        script{
+          echo '==== Running DAST scan ===='
+          sh '''
+
+          '''
+        }
+      }
+
+      post {
+        always{
+          archiveArtifacts artifacts: "${SCAN_REPORT_DIR}/trivy-report.json", allowEmptyArchive:true
+        }
+      }
+    }
   }
 }
 
