@@ -296,7 +296,7 @@ pipeline {
 
           git add kubernetes/overlays.staging/kustomization.yaml
 
-          git diff --cached --quiet && echo "No changes to commit" || \ 
+          git diff --cached --quiet && echo "No changes to commit" || 
           git commit -m "[skip ci] staging: bump image to ${env.IMAGE_TAG} [build #${env.BUILD_NUMBER}]"
 
           export GIT_TERMINAL_PROMPT= 0 
