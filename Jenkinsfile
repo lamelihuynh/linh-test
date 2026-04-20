@@ -272,10 +272,8 @@ pipeline {
       ]){
         script{
           echo '==== Deploy to staging via ArgoCD GitOps ===='
-          sh 
-          """
+          sh """
           set -e 
-
           cd kubernetes/overlays/staging
           if command -v kustomize &> /dev/null; then 
             kustomize edit set image tetris-devsecops=${env.IMAGE_URI}
