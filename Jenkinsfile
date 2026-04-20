@@ -288,6 +288,7 @@ pipeline {
 
           cd ../../
 
+          echo "sh(pwd)"
 
           # Commit and push -> ArgoCD detect change and syncs 
           git config user.email "gianglinh271@gmail.com"
