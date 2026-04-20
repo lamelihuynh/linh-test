@@ -295,7 +295,7 @@ pipeline {
           git config user.name "lamelihuynh"
           git remote set-url origin https://\${GIT_TOKEN}@github.com/lamelihuynh/linh-test.git
 
-          git add kubernetes/overlays/staging/kustomization.yaml
+          # git add kubernetes/overlays/staging/kustomization.yaml
 
           git diff --cached --quiet && echo "No changes to commit" || 
           git commit -m "[skip ci] staging: bump image to ${env.IMAGE_TAG} [build #${env.BUILD_NUMBER}]"
