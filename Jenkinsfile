@@ -346,12 +346,14 @@ pipeline {
 
 
 
-      stage('13. Upload finding'){
+      stage('13. Verify Production'){
       steps{
         script{
           echo '==== Running DAST scan ===='
           sh '''
-
+          echo "Production state:"
+          kubectl get pods -n production 
+          kubectl rollout status deployment/tetris -n production --timeout=5m
           '''
         }
       }
