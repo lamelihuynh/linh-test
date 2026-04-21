@@ -80,184 +80,184 @@ pipeline {
       }
     }
 
-    // stage('3. Secrets Scan'){
-    //   when {
-    //     expression { fileExists('app/src')} 
-    //   }
-    //   steps {
-    //     script{
-    //       echo ' ===== Running secrets scan (Gitleaks).... ==== ' 
-    //       def scanStatus = sh (
-    //         script: '''
+    stage('3. Secrets Scan'){
+      when {
+        expression { fileExists('app/src')} 
+      }
+      steps {
+        script{
+          echo ' ===== Running secrets scan (Gitleaks).... ==== ' 
+          def scanStatus = sh (
+            script: '''
 
-    //           if ! command -v gitleaks &> /dev/null; then
-    //             echo [-] Gitleaks has not installed. The process will installe automated...
-    //             curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz | tar -xz 
-    //             chmod +x gitleaks
-    //             export PATH=$PATH:$(pwd)
-    //           fi
-    //           ./gitleaks protect detect --source . --report-path ${SCAN_REPORT_DIR}/gitleaks-report.json --report-format json
+              if ! command -v gitleaks &> /dev/null; then
+                echo [-] Gitleaks has not installed. The process will installe automated...
+                curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz | tar -xz 
+                chmod +x gitleaks
+                export PATH=$PATH:$(pwd)
+              fi
+              ./gitleaks protect detect --source . --report-path ${SCAN_REPORT_DIR}/gitleaks-report.json --report-format json
 
-    //         ''',
-    //         returnStatus: true
-    //       )
+            ''',
+            returnStatus: true
+          )
 
-    //       if (scanStatus == 1)  {
-    //         error("\033[31m [CRITICAL]: Hardcoded secrets detected by Gitleaks! Pipeline aborted. Please check file report for detail.")
-    //       }
-    //       else if (scanStatus != 0){
-    //         error("\033[33m [SYSTEM ERROR]: Cannot run Gitleaks (Exit code: ${scanStatus}). Pipeline aborted.")
-    //       }
-    //       else {
-    //         echo "\033[32m [PASS]: No secrets found. Code looks clean!"
-    //       }
-    //     }
-    //   }
-    //   post{
-    //     always{
-    //       archiveArtifacts artifacts: "${SCAN_REPORT_DIR}/gitleaks-report.json", allowEmptyArchive: true
-    //     }
-    //   }
-    // }
+          if (scanStatus == 1)  {
+            error("\033[31m [CRITICAL]: Hardcoded secrets detected by Gitleaks! Pipeline aborted. Please check file report for detail.")
+          }
+          else if (scanStatus != 0){
+            error("\033[33m [SYSTEM ERROR]: Cannot run Gitleaks (Exit code: ${scanStatus}). Pipeline aborted.")
+          }
+          else {
+            echo "\033[32m [PASS]: No secrets found. Code looks clean!"
+          }
+        }
+      }
+      post{
+        always{
+          archiveArtifacts artifacts: "${SCAN_REPORT_DIR}/gitleaks-report.json", allowEmptyArchive: true
+        }
+      }
+    }
 
-    // stage('4. SCA Scan'){
-    //   when {
-    //     expression {fileExists('app/package.json')}
-    //   }
+    stage('4. SCA Scan'){
+      when {
+        expression {fileExists('app/package.json')}
+      }
 
-    //   steps{
-    //     script{
-    //       echo " ==== Running SCA scan (OWASP Dependency - Check) ===="
-    //       sh '''
+      steps{
+        script{
+          echo " ==== Running SCA scan (OWASP Dependency - Check) ===="
+          sh '''
 
-    //       '''
-    //     }
-    //   }
-    // }
-    // stage('5. SAST Scan'){
-    //   when {
-    //     expression { fileExists('app/src')}
-    //   }
-    //   steps {
-    //     script{
-    //       echo " ==== Running SAST scan ==== "
-    //       sh '''
+          '''
+        }
+      }
+    }
+    stage('5. SAST Scan'){
+      when {
+        expression { fileExists('app/src')}
+      }
+      steps {
+        script{
+          echo " ==== Running SAST scan ==== "
+          sh '''
 
-    //       '''
-    //     }
-    //   }
-    // }
-
-
-    // stage('6. Build Docker Image'){
-    //   steps{
-    //     script {
-    //       echo '==== Building Docker Image ==== ' 
-    //       sh """
-    //       set -e 
-    //       docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} -t ${env.IMAGE_NAME}:latest -f ./app/Dockerfile ./app
-    //       echo "Build image ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
-    //       """
-    //     }
-    //   }
-    // }
+          '''
+        }
+      }
+    }
 
 
-    // stage('7. Container Scan'){
-    //   steps{
-    //     script{
-    //       echo '==== Running container scan ===='
-    //       sh '''
-
-    //       '''
-    //     }
-    //   }
-
-    //   post {
-    //     always{
-    //       archiveArtifacts artifacts: "${SCAN_REPORT_DIR}/trivy-report.json", allowEmptyArchive:true
-    //     }
-    //   }
-    // }
+    stage('6. Build Docker Image'){
+      steps{
+        script {
+          echo '==== Building Docker Image ==== ' 
+          sh """
+          set -e 
+          docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} -t ${env.IMAGE_NAME}:latest -f ./app/Dockerfile ./app
+          echo "Build image ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+          """
+        }
+      }
+    }
 
 
-    //  stage('8. Iac (Infrastructure as Code) Scan'){
-    //   steps{
-    //     script{
-    //       echo '==== Running IaC scan ===='
-    //       sh '''
+    stage('7. Container Scan'){
+      steps{
+        script{
+          echo '==== Running container scan ===='
+          sh '''
 
-    //       '''
-    //     }
-    //   }
+          '''
+        }
+      }
 
-    //   post {
-    //     always{
-    //       archiveArtifacts artifacts: "${SCAN_REPORT_DIR}/checkov-report.json", allowEmptyArchive:true
-    //     }
-    //   }
-    // }
+      post {
+        always{
+          archiveArtifacts artifacts: "${SCAN_REPORT_DIR}/trivy-report.json", allowEmptyArchive:true
+        }
+      }
+    }
 
 
-    // stage('9. Push to ECR'){
-    //   steps {
-    //     withCredentials([
-    //       string(credentialsId: 'aws-access-key-id', variable:'AWS_ACCESS_KEY_ID'),
-    //       string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
-    //     ]){
-    //       script{
-    //         echo " ==== Pushing image to AWS ECR ===="
-    //         sh """
-    //           set -e 
-    //           export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-    //           export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+     stage('8. Iac (Infrastructure as Code) Scan'){
+      steps{
+        script{
+          echo '==== Running IaC scan ===='
+          sh '''
 
-    //           aws ecr get-login-password --region ${env.AWS_REGION} | \
-    //           docker login --username AWS --password-stdin ${env.REGISTRY}
+          '''
+        }
+      }
 
-    //           docker push ${env.IMAGE_NAME}:${env.IMAGE_TAG}
-    //           docker push ${env.IMAGE_NAME}:latest
+      post {
+        always{
+          archiveArtifacts artifacts: "${SCAN_REPORT_DIR}/checkov-report.json", allowEmptyArchive:true
+        }
+      }
+    }
 
-    //           echo "\033[32m[Success] - Pushed to : ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
-    //           echo "\033[32m Also tagged as : ${env.IMAGE_NAME}:latest"
 
-    //         """
-    //       }
-    //     }
+    stage('9. Push to ECR'){
+      steps {
+        withCredentials([
+          string(credentialsId: 'aws-access-key-id', variable:'AWS_ACCESS_KEY_ID'),
+          string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
+        ]){
+          script{
+            echo " ==== Pushing image to AWS ECR ===="
+            sh """
+              set -e 
+              export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+              export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
 
-    //   }
-    // }
+              aws ecr get-login-password --region ${env.AWS_REGION} | \
+              docker login --username AWS --password-stdin ${env.REGISTRY}
 
-    // stage ('10. Summary & Report'){
-    //   steps{
-    //     script{
-    //       echo """
-    //       ╔══════════════════════════════════════════════════════════════════════════════════════╗
-    //       ║           DevSecOps Pipeline Summary                                                 ║
-    //       ╠══════════════════════════════════════════════════════════════════════════════════════╣
-    //       ║ Build Number     : ${env.BUILD_NUMBER}                                               ║
-    //       ║ Git Commit       : ${env.GIT_COMMIT_SHORT}                                           ║
-    //       ║ Image URI        : ${env.IMAGE_URI}                                                  ║
-    //       ║ Registry         : ${env.REGISTRY}                                                   ║
-    //       ║ ECR Repo         : ${env.ECR_REPO}                                                   ║
-    //       ║ Report Directory : ${env.SCAN_REPORT_DIR}                                            ║
-    //       ╠══════════════════════════════════════════════════════════════════════════════════════╣
-    //       ║ Stages Completed:                                                                    ║
-    //       ║   ✓ Source checkout                                                                  ║
-    //       ║   ✓ Secrets scan                                                                     ║
-    //       ║   ✓ SCA (Dependencies)                                                               ║
-    //       ║   ✓ SAST (Code analysis)                                                             ║
-    //       ║   ✓ Docker build                                                                     ║
-    //       ║   ✓ Container scan                                                                   ║
-    //       ║   ✓ IaC scan                                                                         ║
-    //       ║   ✓ ECR push                                                                         ║  
-    //       ╚══════════════════════════════════════════════════════════════════════════════════════╝
-    //       """
-    //       sh 'ls -lah ${SCAN_REPORT_DIR}/ || echo "No scan reports generated"'
+              docker push ${env.IMAGE_NAME}:${env.IMAGE_TAG}
+              docker push ${env.IMAGE_NAME}:latest
 
-    //     }
-    //   }
-    // }
+              echo "\033[32m[Success] - Pushed to : ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+              echo "\033[32m Also tagged as : ${env.IMAGE_NAME}:latest"
+
+            """
+          }
+        }
+
+      }
+    }
+
+    stage ('10. Summary & Report'){
+      steps{
+        script{
+          echo """
+          ╔══════════════════════════════════════════════════════════════════════════════════════╗
+          ║           DevSecOps Pipeline Summary                                                 ║
+          ╠══════════════════════════════════════════════════════════════════════════════════════╣
+          ║ Build Number     : ${env.BUILD_NUMBER}                                               ║
+          ║ Git Commit       : ${env.GIT_COMMIT_SHORT}                                           ║
+          ║ Image URI        : ${env.IMAGE_URI}                                                  ║
+          ║ Registry         : ${env.REGISTRY}                                                   ║
+          ║ ECR Repo         : ${env.ECR_REPO}                                                   ║
+          ║ Report Directory : ${env.SCAN_REPORT_DIR}                                            ║
+          ╠══════════════════════════════════════════════════════════════════════════════════════╣
+          ║ Stages Completed:                                                                    ║
+          ║   ✓ Source checkout                                                                  ║
+          ║   ✓ Secrets scan                                                                     ║
+          ║   ✓ SCA (Dependencies)                                                               ║
+          ║   ✓ SAST (Code analysis)                                                             ║
+          ║   ✓ Docker build                                                                     ║
+          ║   ✓ Container scan                                                                   ║
+          ║   ✓ IaC scan                                                                         ║
+          ║   ✓ ECR push                                                                         ║  
+          ╚══════════════════════════════════════════════════════════════════════════════════════╝
+          """
+          sh 'ls -lah ${SCAN_REPORT_DIR}/ || echo "No scan reports generated"'
+
+        }
+      }
+    }
   
 
   stage('11. Deploy Staging (GitOps)'){
