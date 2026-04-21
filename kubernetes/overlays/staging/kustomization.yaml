@@ -6,7 +6,7 @@ resources:
 images:
 - name: tetris-devsecops
   newName: 997961584240.dkr.ecr.ap-southeast-1.amazonaws.com/devsecops/ecr
-  newTag: fc58eed
+  newTag: d752517
 patches:
 - patch: |-
     - op: replace
