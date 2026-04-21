@@ -15,6 +15,8 @@ i=$(cat "$COUNTER_FILE")
 cp /Users/huynhnhatlinh0305/Downloads/devsecops-factory/ci/Jenkinsfile ./
 git add .
 git commit -m "Commit version $i"
+
+git pull --rebase origin main
 git push -u origin main
 
 # 5. Tăng giá trị i lên 1 và ghi đè lại vào file counter.txt
