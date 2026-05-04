@@ -288,7 +288,9 @@ pipeline {
           git config user.name "Jenkins CI"
           git remote set-url origin https://${GIT_TOKEN}@github.com/lamelihuynh/linh-test.git 
 
-
+          git checkout -B main
+          git pull origin main --rebase
+          
           git add kubernetes/overlays/staging/kustomization.yaml
           git commit -m "[skip ci] Staging: ${IMAGE_TAG}" || echo "No changes"
           git push origin main || echo "Nothing to push"
