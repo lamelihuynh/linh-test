@@ -6,7 +6,7 @@ resources:
 images:
 - name: tetris-devsecops
   newName: localhost:5001/devsecops/tetris
-  newTag: e4b6803
+  newTag: f8dbe0d
   # Allow npm to write cache in staging (dev environment)
   # Add volumes for temporary files
   # Mount volumes to container
