@@ -5,8 +5,8 @@ resources:
 - ../../base
 images:
 - name: tetris-devsecops
-  newName: 997961584240.dkr.ecr.ap-southeast-1.amazonaws.com/devsecops/ecr
-  newTag: a2a8fba
+  newName: localhost:5001/devsecops/tetris
+  newTag: 502c561
   # Allow npm to write cache in staging (dev environment)
   # Add volumes for temporary files
   # Mount volumes to container
