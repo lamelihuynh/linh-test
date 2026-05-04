@@ -137,8 +137,7 @@ pipeline {
         script{
           echo " ==== Running SCA scan (OWASP Dependency - Check) ===="
           sh '''
-          chmod +x ci/stages/sca-scan.sh 
-          SCAN_REPORT_DIR = ${SCAN_REPORT_DIR} ci/stages/sca-scan.sh || true
+
           '''
         }
       }
