@@ -31,7 +31,7 @@ pipeline {
     AWS_ACCOUNT_ID = '997961584240'
     ECR_REPO = 'devsecops/ecr'
     // REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-    REGISTRY = "local-registry:5001"
+    REGISTRY = "localhost:5001"
     REPO_NAME = "devsecops/tetris"
     IMAGE_NAME = "${REGISTRY}/${REPO_NAME}"
     // IMAGE_NAME = "${REGISTRY}/${ECR_REPO}"
