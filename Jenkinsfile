@@ -2,21 +2,26 @@
 // Jenkins File - DevSecOps Full Pipeline
 // ====================================================
 // 12-stage pipeline:
-// 1. Checkout source from GitHub
-// 2. Prepare metadata (Git commit tag, build number)
-// 3. Secrets scan (Gitleaks, TruffleHog)
-// 4. SCA scan (OWASP Dependency-Check)
-// 5. SAST scan (SonarQube)
-// 6. Build Docker image
-// 7. Container scan (Trivy)
-// 8. IaC scan (Checkov on K8s manifests)
+// 1. Checkout source from GitHub -
+// 2. Prepare metadata (Git commit tag, build number) - 
+// 3. Secrets scan (Gitleaks, TruffleHog) - 
+// 4. SCA scan (OWASP Dependency-Check) - 
+// 5. SAST scan (SonarQube) - 
+// 6. Build Docker image - 
+// 7. Container scan (Trivy) - 
+// 8. IaC scan (Checkov on K8s manifests) - 
 // 9. Push image to AWS ECR
 // 10. Summary & reporting
+// 11. 
+// 12. DAST 
+// 13. Deploy 
 // ====================================================
 
 def     IMAGE_TAG = ""
 def     IMAGE_URI = ""
 def     GIT_COMMIT_SHORT = ""
+def     STAGING_URL = "http://tetris-staging.example.com:30080"
+def     PROD_URL = "http://tetris.example.com:30080"
 
 pipeline {
   agent any
@@ -31,12 +36,15 @@ pipeline {
     DEFECTDOJO_URL = "${DEFECTDOJO_URL}"
 
     SCAN_REPORT_DIR = "${WORKSPACE}/scan-reports"
+
+
+    KUBECONFIG = "/home/jenkins/.kube/config"
   }
 
 
   options{
     // timestamps()
-    timeout(time: 1, unit: 'HOURS')
+    timeout(time: 2, unit: 'HOURS')
     disableConcurrentBuilds()
     buildDiscarder(logRotator(numToKeepStr: '10'))
   }
@@ -129,7 +137,8 @@ pipeline {
         script{
           echo " ==== Running SCA scan (OWASP Dependency - Check) ===="
           sh '''
-
+          chmod +x ci/stages/sca-scan.sh 
+          SCAN_REPORT_DIR = ${SCAN_REPORT_DIR} ci/stages/sca-scan.sh || true
           '''
         }
       }
@@ -141,8 +150,8 @@ pipeline {
       steps {
         script{
           echo " ==== Running SAST scan ==== "
-          sh '''
 
+          sh '''
           '''
         }
       }
@@ -186,7 +195,7 @@ pipeline {
         script{
           echo '==== Running IaC scan ===='
           sh '''
-
+          
           '''
         }
       }
@@ -271,60 +280,51 @@ pipeline {
         string(credentialsId: 'github-token', variable: 'GIT_TOKEN')
       ]){
         script{
-          echo '==== Deploy to staging via ArgoCD GitOps ===='
-          sh """
+          echo "Deploying to staging via GitOps.."
+          sh '''
           set -e 
+          
           cd kubernetes/overlays/staging
-          if command -v kustomize &> /dev/null; then 
-            kustomize edit set image tetris-devsecops=${env.IMAGE_URI}
-            echo 
-          else 
-            # Fallback : use if kustomize not installed
-            sed -i "s|newTag:.*|newTag: ${env.IMAGE_TAG}|g" kustomization.yaml
-          fi 
+          echo "Updating staging kustomization..."
+          kustomize edit set image tetris-devsecops=${IMAGE_URI}
 
-          echo "Updated kustomization.yaml:"
-          cat kustomization.yaml 
+          cd ../../ 
 
-          cd ../../../
+          git config user.email "jenkins@localhost"
+          git config user.name "Jenkins CI"
+          git remote set-url origin https://${GIT_TOKEN}@github.com/lamelihuynh/linh-test.git 
 
-          echo "sh(pwd)"
 
-          # Commit and push -> ArgoCD detect change and syncs 
-          git config user.email "gianglinh271@gmail.com"
-          git config user.name "lamelihuynh"
-          git remote set-url origin https://\${GIT_TOKEN}@github.com/lamelihuynh/linh-test.git
+          git add kubernetes/overlays/staging/kustomization.yaml
+          git commit -m "[skip ci] Staging: ${IMAGE_TAG}" || echo "No changes"
+          git push origin main || echo "Nothing to push"
 
-          git add ./kubernetes/overlays/staging/kustomization.yaml
 
-          git diff --cached --quiet && echo "No changes to commit" || 
-          git commit -m "[skip ci] staging: bump image to ${env.IMAGE_TAG} [build #${env.BUILD_NUMBER}]"
+          echo "Stagin kustomization updated"
+          echo "Waiting for ArgoCD to sync..."
 
-          export GIT_TERMINAL_PROMPT=0 
-          git push origin HEAD:main || echo "Nothing to push"
-          echo "[OK] Staging kustomization updated - ArgoCD will sync automatically"
+          sleep 5
 
-          """
 
-          echo 'Waiting for staging to be healthy...'
-          sh """
-            for i in \$(seq 1 18); do 
-              HTTP=\$(curl -sf -o /dev/null -w "%{http_code}"  ${env.STAGING_URL}/health 2>/dev/null || echo 000 )
-              if ["\$HTTP" = "200"]; then 
-                echo   "[OK] Staging healthy after \${i} attemps"
-                exit 0
-              fi
-              echo "Attempt \${i}/18: HTTP \$HTTP - waiting 10s..."
-              sleep 10
-            done 
-            echo "[WARN] Staging healthy check timeout - DAST may run against partial deployment"
-          """
+          '''
         }
       }
     }
   }
 
 
+  stage ('12. Verify Staging'){
+    steps{
+      script{
+        echo "Waiting for staging pods to be ready..."
+        sh '''
+        kubectl get pods -n staging
+        kubectl rollout status deployment/tetris -n staging --timeout=5m
+        echo "Staging deployment ready"
+        '''
+      }
+    }
+  }
 
 
   stage('12. DAST Scan'){
