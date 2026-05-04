@@ -30,8 +30,11 @@ pipeline {
     AWS_REGION= 'ap-southeast-1'
     AWS_ACCOUNT_ID = '997961584240'
     ECR_REPO = 'devsecops/ecr'
-    REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-    IMAGE_NAME = "${REGISTRY}/${ECR_REPO}"
+    // REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+    REGISTRY = "local-registry:5000"
+    REPO_NAME = "devsecops/tetris"
+    IMAGE_NAME = "${REGISTRY}/${REPO_NAME}"
+    // IMAGE_NAME = "${REGISTRY}/${ECR_REPO}"
     SONAR_HOST = "${SONAR_HOST}"
     DEFECTDOJO_URL = "${DEFECTDOJO_URL}"
 
@@ -214,21 +217,13 @@ pipeline {
           string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
         ]){
           script{
-            echo " ==== Pushing image to AWS ECR ===="
+            echo " ==== Pushing image to local registry ===="
             sh """
-              set -e 
-              export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-              export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+            docker push ${env.IMAGE_NAME}:${env.IMAGE_TAG}
+            docker push ${env.IMAGE_NAME}:latest
 
-              aws ecr get-login-password --region ${env.AWS_REGION} | \
-              docker login --username AWS --password-stdin ${env.REGISTRY}
-
-              docker push ${env.IMAGE_NAME}:${env.IMAGE_TAG}
-              docker push ${env.IMAGE_NAME}:latest
-
-              echo "\033[32m[Success] - Pushed to : ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
-              echo "\033[32m Also tagged as : ${env.IMAGE_NAME}:latest"
-
+            echo "\\033[32m[Success] - Pushed to : ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+            echo "\\033[32m[Success] - Also tagged as : ${env.IMAGE_NAME}:latest"           
             """
           }
         }
