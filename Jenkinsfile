@@ -282,7 +282,7 @@ pipeline {
           echo "Updating staging kustomization..."
           kustomize edit set image tetris-devsecops=${IMAGE_URI}
 
-          cd ../../ 
+          cd ../../../
 
           git config user.email "jenkins@localhost"
           git config user.name "Jenkins CI"
