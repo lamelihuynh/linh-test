@@ -13,6 +13,8 @@ i=$(cat "$COUNTER_FILE")
 
 # 4. Thực hiện các lệnh của bạn
 cp /Users/huynhnhatlinh0305/Downloads/devsecops-factory/ci/Jenkinsfile ./
+rm -rf kubernetes
+cp -r /Users/huynhnhatlinh0305/Downloads/devsecops-factory/kubernetes ./
 git add .
 git commit -m "Commit version $i"
 
